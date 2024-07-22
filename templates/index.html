@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAPM Analysis Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background: #50b3a2;
+            color: #ffffff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #e8491d 3px solid;
+        }
+        header a {
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+        header ul {
+            padding: 0;
+            list-style: none;
+        }
+        header li {
+            display: inline;
+            padding: 0 20px 0 20px;
+        }
+        .showcase {
+            background: #35424a;
+            color: #ffffff;
+            text-align: center;
+            padding: 100px 20px;
+        }
+        .showcase h1 {
+            font-size: 55px;
+            margin-top: 0;
+        }
+        .form-container {
+            background: #ffffff;
+            padding: 20px;
+            margin: 20px 0;
+            border: #e8491d 1px solid;
+        }
+        .form-container label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 20px 0;
+            border: 1px solid #ccc;
+        }
+        .form-container button {
+            background: #50b3a2;
+            color: #ffffff;
+            border: 0;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .result {
+            background: #e0e0e0;
+            padding: 20px;
+            margin: 20px 0;
+            border: #ccc 1px solid;
+        }
+        .chart-container {
+            margin: 20px 0;
+        }
+        .footer {
+            background: #35424a;
+            color: #ffffff;
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>CAPM Analysis Tool</h1>
+        </div>
+    </header>
+    <div class="showcase">
+        <div class="container">
+            <h1>Capital Asset Pricing Model (CAPM)</h1>
+            <p>The CAPM helps us understand the relationship between the risk of an asset and its expected return. It's widely used to estimate how much return an investor should expect for taking on additional risk.</p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="form-container">
+            <h2>Calculate Expected Return Using CAPM</h2>
+            <form action="/capm" method="POST">
+                <label for="risk_free_rate">Risk-Free Rate (%):</label>
+                <input type="text" id="risk_free_rate" name="risk_free_rate" required>
+                
+                <label for="beta">Beta:</label>
+                <input type="text" id="beta" name="beta" required>
+                
+                <label for="market_return">Market Return (%):</label>
+                <input type="text" id="market_return" name="market_return" required>
+                
+                <button type="submit">Calculate</button>
+            </form>
+        </div>
+        {% if result %}
+            <div class="result">
+                <h2>Expected Return: {{ result }}%</h2>
+            </div>
+            <div class="chart-container">
+                <h2>Visualization</h2>
+                <p>This graph shows the different components of the CAPM calculation:</p>
+                <ul>
+                    <li><strong>Risk-Free Rate:</strong> This is the return you'd expect from an investment with no risk, like government bonds.</li>
+                    <li><strong>Beta:</strong> This measures how much the stock's price moves relative to the market. A higher beta means more volatility and potential for higher returns.</li>
+                    <li><strong>Market Return:</strong> The average return of the market, which we use as a benchmark.</li>
+                    <li><strong>Expected Return:</strong> This is the return we calculate using the CAPM formula, considering the risk-free rate, beta, and market return.</li>
+                </ul>
+                <canvas id="capmChart"></canvas>
+            </div>
+            <script>
+                var ctx = document.getElementById('capmChart').getContext('2d');
+                var capmChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Risk-Free Rate', 'Beta', 'Market Return', 'Expected Return'],
+                        datasets: [{
+                            label: 'CAPM Components',
+                            data: [{{ risk_free_rate }}, {{ beta }}, {{ market_return }}, {{ result }}],
+                            backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(153, 102, 255, 0.2)'],
+                            borderColor: ['rgba(75, 192, 192, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(153, 102, 255, 1)'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            </script>
+        {% endif %}
+        <div>
+            <h2>How CAPM Works</h2>
+            <p>The CAPM formula is:   </p>
+            <p><strong>Expected Return = Risk-Free Rate + Beta * (Market Return - Risk-Free Rate)</strong></p>
+            <p>Here's a breakdown:</p>
+            <ul>
+                <li><strong>Risk-Free Rate: </strong> The return from an investment with no risk, like government bonds.</li>
+                <li><strong>Beta: </strong> A measure of how much the stock's price moves compared to the market. A beta greater than 1 means more volatility than the market.</li>
+                <li><strong>Market Return: </strong> The expected return from the market, usually based on historical data from a market index like the S&P 500.</li>
+            </ul>
+        </div>
+        <div>
+            <h2>Real-World Applications of CAPM</h2>
+            <p>The CAPM is used in various ways in finance:</p>
+            <ul>
+                <li>To  estimate the cost of equity capital for companies.</li>
+                <li>For portfolio management and optimization.</li>
+                <li>To value stocks and other financial assets.</li>
+                <li>To assess the performance of mutual funds and other investment portfolios.</li>
+            </ul>
+        </div>
+        <div>
+            <h2>Assumptions and Limitations of CAPM</h2>
+            <p>CAPM is based on several assumptions:</p>
+            <ul>
+                <li>Investors are rational and prefer  less risk.</li>
+                <li>Markets are efficient, and all investors have access to  the same information.</li>
+                <li>There are no taxes or transaction costs.</li> 
+                <li>Investors can lend and borrow at the risk-free rate.</li>
+            </ul>
+            <p>However, it has some limitations:</p>
+            <ul>
+                <li>Real markets aren't perfectly efficient.</li>
+                <li>Investor behavior can be irrational.</li>
+                <li>Taxes and transaction costs exist.</li>
+                <li>Risk-free borrowing and lending aren't always possible.</li>
+            </ul>
+        </div>
+        <div>
+            <h2>Case Studies</h2>
+            <p>Let's look at some real-world examples of CAPM in action:</p>
+            <ul>
+                <li><strong>Company Valuation:</strong> Analysts use CAPM to estimate the cost of equity for companies like Apple and Microsoft.</li>
+                <li><strong>Portfolio Management:</strong> CAPM is used in constructing and optimizing investment portfolios.</li>
+            </ul>
+        </div>
+    </div>
+    <footer class="footer">
+        <p>Created by HR Sugarnan and Shiv Budhdeo | CAPM Analysis Tool</p>
+    </footer>
+</body>
+</html>
